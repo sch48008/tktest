@@ -1,15 +1,17 @@
 <ion-view view-title="Login">
     <ion-content class="padding">
+      <form name="loginForm" ng-submit="loginSubmitForm(loginForm)"  novalidate>
           <div class="list list-inset">
-            <ion-input class="item item-input">
-                <input type="email" placeholder="Email">
+            <ion-input class="item item-input" ng-class="{ 'has-errors' : loginForm.email.$invalid && loginForm.$submitted}">
+                <input name="email" type="email"  ng-model="user.email" placeholder="Email" required>
             </ion-input>
-            <ion-input class="item item-input">
-              <input type="password" placeholder="Password">
+            <ion-input class="item item-input" ng-class="{ 'has-errors' : loginForm.password.$invalid && loginForm.$submitted}">
+              <input name="password" type="password"  ng-model="user.password" placeholder="Password" required>
             </ion-input>
           </div>
-          <button class="button button-block button-positive">
+          <button type="submit" class="button button-block button-positive">
             Login
           </button>
+      </form>
     </ion-content>
 </ion-view>
