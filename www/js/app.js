@@ -41,5 +41,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'RESTConnection'])
       .state('register', {
         url: '/register',
         templateUrl: 'templates/register.html',
+        controller: 'RegisterCtrl',
       });
   });
