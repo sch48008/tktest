@@ -159,9 +159,11 @@ angular.module('starter.controllers', [])
             if (TKQuestionsService.questionsLength() === 0)
                 getQuestions();
             else {
-                
+
                 // hold for now...
-                $state.go('');
+                $state.go('test.detail', {
+                    testID: 1
+                });
             }
         };
 
@@ -184,10 +186,10 @@ angular.module('starter.controllers', [])
             ServerQuestionService.all($window.localStorage['token'])
                 .then(function(response) {
                     if (response.status === 200) {
-                        
+
                         // debug
-                        console.log("questions were retrieved from db")
-                        
+                        console.log("questions were retrieved from db");
+
                         var questions = response.data;
                         TKQuestionsService.setQuestions(questions);
                     }
@@ -209,4 +211,44 @@ angular.module('starter.controllers', [])
             }
         }
     }
+])
+
+// The Test controller
+.controller('TestCtrl', ['$scope', 'testInfo', '$stateParams', '$state',
+    function($scope, testInfo, $stateParams, $state) {
+
+        // set title
+        var qNumber = $stateParams.testID;
+        $scope.title = "Question #" + qNumber;
+
+        testInfo.forEach(function(testQuestion) {
+            if (testQuestion.Answer_ID === "A")
+                $scope.questionA = testQuestion;
+            else if (testQuestion.Answer_ID === "B")
+                $scope.questionB = testQuestion;
+        });
+
+        $scope.buttonClicked = function(option) {
+            
+            // rjs debug
+            console.log("buttonClicked was called. Option selected was " + option);
+            
+            if (option === "A") {
+                console.log("Chose A");
+            }
+            else if (option === "B") {
+                console.log("Chose B");
+            }
+            var nextqNumber = Number(qNumber) + 1;
+            if (nextqNumber > 30) {
+                $state.go('results');
+            }
+            else {
+                $state.go('test.detail', {
+                    testID: nextqNumber
+                });
+            }
+        };
+        
+    } // end function
 ]);

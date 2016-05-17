@@ -37,6 +37,8 @@ angular.module('RESTConnection', [])
 
     }
 ])
+
+// The 'ServerQuestionService' which gets all the questions from the database.
 .service('ServerQuestionService', ['$http', 'ENDPOINT_URL',
 function ($http,  ENDPOINT_URL) {
   var service = this,

@@ -37,11 +37,30 @@ angular.module('starter', ['ionic', 'starter.controllers', 'RESTConnection', 'TK
       .state('lobby', {
         url: '/lobby',
         templateUrl: 'templates/lobby.html',
-        controller:'LobbyCtrl'
+        controller: 'LobbyCtrl'
       })
       .state('register', {
         url: '/register',
         templateUrl: 'templates/register.html',
         controller: 'RegisterCtrl',
+      })
+      .state('test', {
+        abstract: true,
+        url: '/test',
+        template: '<ion-nav-view></ion-nav-view>'
+      })
+      .state('test.detail', {
+        url: '/question:testID',
+        templateUrl: 'templates/question.html',
+        controller: 'TestCtrl',
+        resolve: {
+          testInfo: function($stateParams, TKQuestionsService) {
+            return TKQuestionsService.getQuestion($stateParams.testID);
+          }
+        }
+      })
+      .state('results', {
+        url: '/results',
+        templateUrl: 'templates/results.html'
       });
   });
