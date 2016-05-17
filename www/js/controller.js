@@ -1,8 +1,8 @@
 angular.module('starter.controllers', [])
 
 // The login controller
-.controller('LoginCtrl', ['$scope', '$state', 'UserService', '$ionicHistory',
-    function($scope, $state, UserService, $ionicHistory) {
+.controller('LoginCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window',
+    function($scope, $state, UserService, $ionicHistory, $window) {
 
         $scope.user = {};
 
@@ -13,6 +13,11 @@ angular.module('starter.controllers', [])
                         if (response.status === 200) {
                             //Should return a token
                             console.log(response);
+
+                            // save userId and token
+                            $window.localStorage["userID"] = response.data.userId;
+                            $window.localStorage['token'] = response.data.id;
+
                             $ionicHistory.nextViewOptions({
                                 historyRoot: true,
                                 disableBack: true
@@ -42,37 +47,68 @@ angular.module('starter.controllers', [])
 ])
 
 // The register controller
-.controller('RegisterCtrl', ['$scope', '$state', 'UserService', '$ionicHistory',
-    function($scope, $state, UserService, $ionicHistory) {
+.controller('RegisterCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window',
+    function($scope, $state, UserService, $ionicHistory, $window) {
+
 
         // used to register user
         $scope.register = {};
-        
-        // used to verify repeat password only
-        $scope.password = {};        
 
+        // used to verify repeat password only
+        $scope.password = {};
+
+
+
+        //Here is a sub-function required to get the access token after registration.
+        function loginAfterRegister() {
+            UserService.login($scope.register)
+                .then(function(response) {
+                    if (response.status === 200) {
+
+                        //Should return a token
+                        $window.localStorage["userID"] = response.data.userId;
+                        $window.localStorage['token'] = response.data.id;
+
+                        console.log("successful login after register");
+
+                        $ionicHistory.nextViewOptions({
+                            historyRoot: true,
+                            disableBack: true
+                        });
+                        $state.go('lobby');
+                    }
+                    else {
+                        // invalid response
+                        $state.go('landing');
+                    }
+                }, function(response) {
+                    // something went wrong
+                    console.log(response);
+                    $state.go('landing');
+                });
+        }
+
+
+
+        // Here is the registration function
         $scope.registerSubmitForm = function(form) {
-            
+
             // Check that the passwords match
-            if($scope.register.password !== $scope.password.repeatPassword) {
+            if ($scope.register.password !== $scope.password.repeatPassword) {
                 alert("The repeat password is not the same as the password. Please correct.");
                 return;
             }
-            
+
             // Create user
             if (form.$valid) {
                 UserService.create($scope.register)
                     .then(function(response) {
                         if (response.status === 200) {
-                            console.log(response);
-                            $ionicHistory.nextViewOptions({
-                                historyRoot: true,
-                                disableBack: true
-                            });
-                            $state.go('lobby');
+                            loginAfterRegister();
                         }
                         else {
                             // invalid response
+                            console.log(response);
                             alert("Something went wrong, try again.");
                         }
                     }, function(response) {
@@ -90,5 +126,87 @@ angular.module('starter.controllers', [])
                     });
             }
         };
+    }
+])
+
+// The Lobby Controller
+.controller('LobbyCtrl', ['$scope', '$state', '$ionicHistory', 'UserService', '$window', 'ServerQuestionService', 'TKQuestionsService',
+    function($scope, $state, $ionicHistory, UserService, $window, ServerQuestionService, TKQuestionsService) {
+
+        // Logout function - called from template
+        $scope.logout = function() {
+            UserService.logout($window.localStorage.token)
+                .then(function(response) {
+                    //The successful code for logout is 204
+                    if (response.status === 204) {
+                        console.log("successful logout");
+                        $ionicHistory.nextViewOptions({
+                            historyRoot: true,
+                            disableBack: true
+                        });
+                        $state.go('landing');
+                    }
+                    else {
+                        alert("Could not logout at this moment, try again.");
+                    }
+                }, function(response) {
+                    alert("Could not logout at this moment, try again.");
+                });
+        };
+
+        // Take Test Button Handler- called from template
+        $scope.takeTestButtonTapped = function() {
+            if (TKQuestionsService.questionsLength() === 0)
+                getQuestions();
+            else {
+                
+                // hold for now...
+                $state.go('');
+            }
+        };
+
+
+        // This code runs on startup...
+
+
+        //Get Questions Initially if they are not already stored
+        if (TKQuestionsService.questionsLength() === 0) {
+
+            console.log("questions length = 0 so will get questions");
+            getQuestions();
+        }
+        else {
+            console.log("questions length > 0");
+        }
+
+        // Get Questions
+        function getQuestions() {
+            ServerQuestionService.all($window.localStorage['token'])
+                .then(function(response) {
+                    if (response.status === 200) {
+                        
+                        // debug
+                        console.log("questions were retrieved from db")
+                        
+                        var questions = response.data;
+                        TKQuestionsService.setQuestions(questions);
+                    }
+                    else {
+                        // invalid response
+                        confirmPrompt();
+                    }
+                }, function(response) {
+                    // something went wrong
+                    confirmPrompt();
+                });
+        }
+
+        // method
+        function confirmPrompt() {
+            var response = confirm("The questions could not be retrieved at this time, do you want to try again?");
+            if (response == true) {
+                getQuestions();
+            }
+        }
     }
 ]);
