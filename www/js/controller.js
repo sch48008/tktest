@@ -22,6 +22,7 @@ angular.module('starter.controllers', [])
                                 historyRoot: true,
                                 disableBack: true
                             });
+                            
                             $state.go('lobby');
                         }
                         else {
@@ -140,10 +141,12 @@ angular.module('starter.controllers', [])
                     //The successful code for logout is 204
                     if (response.status === 204) {
                         console.log("successful logout");
+                        
                         $ionicHistory.nextViewOptions({
                             historyRoot: true,
                             disableBack: true
                         });
+                        
                         $state.go('landing');
                     }
                     else {
@@ -231,7 +234,7 @@ angular.module('starter.controllers', [])
         $scope.buttonClicked = function(option) {
             
             // rjs debug
-            console.log("buttonClicked was called. Option selected was " + option);
+            // console.log("buttonClicked was called. Option selected was " + option);
             
             if (option === "A") {
                 console.log("Chose A");
