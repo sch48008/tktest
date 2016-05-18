@@ -49,15 +49,44 @@ angular.module('TKServicesModule', [])
     };
     var answers = {};
 
+    // save the individual answer but also increment the appropriate category total
     service.saveAnswer = function(questionNumber, answerCategory, option) {
         categoryTotals[answerCategory.toLowerCase()]++;
         answers[questionNumber] = option;
     };
 
+    // get category totals
     service.getCategoryTotals = function() {
         return categoryTotals;
     };
-    
-    
 
+    // set category totals
+    service.setCategoryTotals = function(pCategoryTotals) {
+        categoryTotals = pCategoryTotals;
+    };
+
+    // reset totals to zero once test is complete and has been viewed.
+    service.resetCategoryTotals = function() {
+        for (var property in categoryTotals) {
+            if (categoryTotals.hasOwnProperty(property)) {
+                categoryTotals[property] = 0;
+            }
+        }
+    };
+
+})
+
+// Show button service
+.service('TKResultsButtonService', function() {
+    var service = this;
+
+    var shouldShowButton = false;
+
+    service.setShouldShowMenuButton = function(show) {
+        shouldShowButton = show;
+    };
+
+    service.getShouldShowMenuButton = function() {
+        return shouldShowButton;
+    };
 });

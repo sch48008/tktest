@@ -63,5 +63,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'RESTConnection', 'TK
         url: '/results',
         templateUrl: 'templates/results.html',
         controller: 'ResultsCtrl'
+      })
+      .state('history', {
+        url: '/history',
+        templateUrl: 'templates/history.html',
+        controller: 'HistoryCtrl'
       });
   });

@@ -60,14 +60,15 @@ angular.module('RESTConnection', [])
 // The 'ServerAnswersService' which stores the answers in the database.
 .service('ServerAnswersService', ['$http', 'ENDPOINT_URL',
     function($http, ENDPOINT_URL) {
-        
-        var service = this,
-            path = 'TestResults/';
+
+        var service = this;
+        var path = 'TestResults/';
 
         function getUrl() {
             return ENDPOINT_URL + path;
         }
-        
+
+        // This stores the results from one complete test (30 questions) to the database
         service.create = function(answer, token) {
             return $http({
                 url: getUrl(),
@@ -75,6 +76,15 @@ angular.module('RESTConnection', [])
                 data: JSON.stringify(answer),
                 headers: {
                     'Authorization': token
+                }
+            });
+        };
+
+        // This retrieves all of the result sets for a particular user
+        service.getResultsByUser = function(userID, token) {
+            return $http.get(getUrl() + "?filter[where][userID]=" + userID, {
+                params: {
+                    access_token: token
                 }
             });
         };
