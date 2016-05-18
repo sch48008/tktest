@@ -40,15 +40,43 @@ angular.module('RESTConnection', [])
 
 // The 'ServerQuestionService' which gets all the questions from the database.
 .service('ServerQuestionService', ['$http', 'ENDPOINT_URL',
-function ($http,  ENDPOINT_URL) {
-  var service = this,
-  path = 'Questions/';
-  function getUrl() {
-    return ENDPOINT_URL + path;
-  }
-  service.all = function (token) {
-    return $http.get(getUrl(), {
-        params: { access_token: token }
-    });
-  };
-}]);
+    function($http, ENDPOINT_URL) {
+        var service = this,
+            path = 'Questions/';
+
+        function getUrl() {
+            return ENDPOINT_URL + path;
+        }
+        service.all = function(token) {
+            return $http.get(getUrl(), {
+                params: {
+                    access_token: token
+                }
+            });
+        };
+    }
+])
+
+// The 'ServerAnswersService' which stores the answers in the database.
+.service('ServerAnswersService', ['$http', 'ENDPOINT_URL',
+    function($http, ENDPOINT_URL) {
+        
+        var service = this,
+            path = 'TestResults/';
+
+        function getUrl() {
+            return ENDPOINT_URL + path;
+        }
+        
+        service.create = function(answer, token) {
+            return $http({
+                url: getUrl(),
+                method: "POST",
+                data: JSON.stringify(answer),
+                headers: {
+                    'Authorization': token
+                }
+            });
+        };
+    }
+]);

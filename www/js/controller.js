@@ -22,7 +22,7 @@ angular.module('starter.controllers', [])
                                 historyRoot: true,
                                 disableBack: true
                             });
-                            
+
                             $state.go('lobby');
                         }
                         else {
@@ -141,12 +141,12 @@ angular.module('starter.controllers', [])
                     //The successful code for logout is 204
                     if (response.status === 204) {
                         console.log("successful logout");
-                        
+
                         $ionicHistory.nextViewOptions({
                             historyRoot: true,
                             disableBack: true
                         });
-                        
+
                         $state.go('landing');
                     }
                     else {
@@ -217,8 +217,8 @@ angular.module('starter.controllers', [])
 ])
 
 // The Test controller
-.controller('TestCtrl', ['$scope', 'testInfo', '$stateParams', '$state',
-    function($scope, testInfo, $stateParams, $state) {
+.controller('TestCtrl', ['$scope', 'testInfo', '$stateParams', '$state', '$window', 'ServerAnswersService', 'TKQuestionsService', 'TKAnswersService', '$ionicHistory',
+    function($scope, testInfo, $stateParams, $state, $window, ServerAnswersService, TKQuestionsService, TKAnswersService, $ionicHistory) {
 
         // set title
         var qNumber = $stateParams.testID;
@@ -232,19 +232,12 @@ angular.module('starter.controllers', [])
         });
 
         $scope.buttonClicked = function(option) {
-            
-            // rjs debug
-            // console.log("buttonClicked was called. Option selected was " + option);
-            
-            if (option === "A") {
-                console.log("Chose A");
-            }
-            else if (option === "B") {
-                console.log("Chose B");
-            }
+            var category = $scope["question" + option].Style;
+            TKAnswersService.saveAnswer(qNumber, category, option);
+
             var nextqNumber = Number(qNumber) + 1;
             if (nextqNumber > 30) {
-                $state.go('results');
+                performRequest();
             }
             else {
                 $state.go('test.detail', {
@@ -252,6 +245,106 @@ angular.module('starter.controllers', [])
                 });
             }
         };
-        
+
+        // This method stores the category totals for the user/date/time to the database
+        function performRequest() {
+
+            var userCategoryTotals = TKAnswersService.getCategoryTotals();
+
+            // add these properties to the user's category totals object. Because javascript is dynamic we can add properties to the object at any time.
+
+            // user id
+            userCategoryTotals["userID"] = $window.localStorage['userID'];
+
+            // date/time
+            var date = new Date();
+            userCategoryTotals["createDate"] = date.toUTCString();
+
+            // Call the REST service
+            ServerAnswersService.create(userCategoryTotals, $window.localStorage['token'])
+                .then(function(response) {
+                    if (response.status === 200) {
+                        $ionicHistory.nextViewOptions({
+                            disableBack: true
+                        });
+                        $state.go('results');
+                    }
+                    else {
+                        // invalid response
+                        confirmPrompt();
+                    }
+                }, function(response) {
+                    // something went wrong
+                    confirmPrompt();
+                });
+        }
+
+        // Only used if we have trouble storing the results
+        function confirmPrompt() {
+            var response = confirm("The answers could not be saved at the moment, do you want to try again?");
+            if (response == true) {
+                performRequest();
+            }
+            else {
+                $ionicHistory.nextViewOptions({
+                    disableBack: true
+                });
+                $state.go('results');
+            }
+        }
+
     } // end function
+])
+
+// The Results controller
+.controller('ResultsCtrl', ['$scope', 'TKAnswersService', '$ionicHistory', '$state',
+    function($scope, TKAnswersService, $ionicHistory, $state) {
+
+        $scope.menuButtonTapped = function() {
+            $ionicHistory.nextViewOptions({
+                historyRoot: true,
+                disableBack: true
+            });
+            $state.go('lobby');
+        };
+
+        // The chart x-axis labels
+        $scope.labels = ["Competing", "Collaborating", "Compromising", "Avoiding", "Accommodating"];
+
+        var categoryTotals = TKAnswersService.getCategoryTotals();
+
+        // To compute percentage. The maximum value a user can obtain for a category is twelve.
+        function returnPercentage(value) {
+            return (value / 12) * 100;
+        }
+
+        // The chart series data
+        $scope.data = [
+            [returnPercentage(categoryTotals["competing"]), returnPercentage(categoryTotals["collaborating"]),
+                returnPercentage(categoryTotals["compromising"]), returnPercentage(categoryTotals["avoiding"]), returnPercentage(categoryTotals["accommodating"])
+            ]
+        ];
+
+        $scope.options = {
+            scaleIntegersOnly: true,
+            animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
+            scaleOverride: true,
+            scaleSteps: 4,
+            scaleStepWidth: 25,
+            scaleStartValue: 0,
+            scaleLabel: "<%=value%>" + "%",
+            tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value.toFixed(0) %>" + "%"
+        };
+
+        $scope.colours = [{
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(15,187,25,1)",
+            pointColor: "rgba(15,187,25,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,0.8)"
+        }];
+    }
 ]);

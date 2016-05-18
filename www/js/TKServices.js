@@ -1,7 +1,7 @@
 // define new module
 angular.module('TKServicesModule', [])
 
-// first service in module
+// Question service
 .service('TKQuestionsService', function() {
 
     var service = this;
@@ -34,4 +34,30 @@ angular.module('TKServicesModule', [])
     service.questionsLength = function() {
         return questions.length;
     };
+})
+
+// Answers service
+.service('TKAnswersService', function() {
+
+    var service = this;
+    var categoryTotals = {
+        "competing": 0,
+        "collaborating": 0,
+        "compromising": 0,
+        "avoiding": 0,
+        "accommodating": 0
+    };
+    var answers = {};
+
+    service.saveAnswer = function(questionNumber, answerCategory, option) {
+        categoryTotals[answerCategory.toLowerCase()]++;
+        answers[questionNumber] = option;
+    };
+
+    service.getCategoryTotals = function() {
+        return categoryTotals;
+    };
+    
+    
+
 });
