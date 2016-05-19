@@ -49,10 +49,28 @@ angular.module('TKServicesModule', [])
     };
     var answers = {};
 
+    // used to retract category totals when using the "Back" button
+    var lastQuestionNumber = 0;
+    var categoriesStack = [];
+
+    service.setLastQuestionNumber = function(qNumber) {
+        lastQuestionNumber = qNumber;
+    };
+
+    service.getLastQuestionNumber = function() {
+        return lastQuestionNumber;
+    };
+
     // save the individual answer but also increment the appropriate category total
     service.saveAnswer = function(questionNumber, answerCategory, option) {
         categoryTotals[answerCategory.toLowerCase()]++;
         answers[questionNumber] = option;
+        categoriesStack.push(answerCategory);
+    };
+
+    // used to retract category totals when using the "Back" button
+    service.eraseLastAnswer = function() {
+        categoryTotals[categoriesStack.pop().toLowerCase()]--;
     };
 
     // get category totals
@@ -72,6 +90,7 @@ angular.module('TKServicesModule', [])
                 categoryTotals[property] = 0;
             }
         }
+        lastQuestionNumber = 0;
     };
 
 })

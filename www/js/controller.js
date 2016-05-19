@@ -6,6 +6,8 @@ angular.module('starter.controllers', [])
 
         $scope.user = {};
 
+
+        // All this is about storing the user's email for future visits...
         var rememberMeValue;
         if ($window.localStorage["rememberMe"] === undefined || $window.localStorage["rememberMe"] == "true") {
             rememberMeValue = true;
@@ -17,11 +19,12 @@ angular.module('starter.controllers', [])
         $scope.checkbox = {
             rememberMe: rememberMeValue
         };
-        
+
         if ($window.localStorage["username"] !== undefined && rememberMeValue === true) {
             $scope.user.email = $window.localStorage["username"];
         }
 
+        // On submit
         $scope.loginSubmitForm = function(form) {
             if (form.$valid) {
                 UserService.login($scope.user)
@@ -40,6 +43,18 @@ angular.module('starter.controllers', [])
                             });
 
                             $state.go('lobby');
+
+                            // All this is about storing the user's email for future visits...
+                            $window.localStorage["rememberMe"] = $scope.checkbox.rememberMe;
+                            if ($scope.checkbox.rememberMe) {
+                                $window.localStorage["username"] = $scope.user.email;
+                            }
+                            else {
+                                delete $window.localStorage["username"];
+                                $scope.user.email = "";
+                            }
+                            $scope.user.password = "";
+                            form.$setPristine();
                         }
                         else {
                             // invalid response
