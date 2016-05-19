@@ -1,8 +1,8 @@
 angular.module('starter.controllers', [])
 
 // The login controller
-.controller('LoginCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window',
-    function($scope, $state, UserService, $ionicHistory, $window) {
+.controller('LoginCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window', 'SSFAlertsService',
+    function($scope, $state, UserService, $ionicHistory, $window, SSFAlertsService) {
 
         $scope.user = {};
 
@@ -26,9 +26,16 @@ angular.module('starter.controllers', [])
 
         // On submit
         $scope.loginSubmitForm = function(form) {
+
+            console.log("before check form valid");
+            
             if (form.$valid) {
                 UserService.login($scope.user)
                     .then(function(response) {
+
+                        // debug
+                        console.log("then function 1");
+
                         if (response.status === 200) {
                             //Should return a token
                             console.log(response);
@@ -57,20 +64,32 @@ angular.module('starter.controllers', [])
                             form.$setPristine();
                         }
                         else {
+
+                            // debug
+                            console.log("then function 1: else response.status !== 200");
+
                             // invalid response
-                            alert("Something went wrong, try again.");
+                            SSFAlertsService.showAlert("Error", "Something went wrong, try again.");
                         }
                     }, function(response) {
                         // Code 401 corresponds to Unauthorized access, in this case, the email/password combination was incorrect.
                         if (response.status === 401) {
-                            alert("Incorrect username or password");
+                            SSFAlertsService.showAlert("Error", "Incorrect username or password");
                         }
                         else if (response.data === null) {
+
+                            // debug
+                            console.log("then function 2: response.data === null");
+
                             //If the data is null, it means there is no internet connection.
-                            alert("The connection with the server was unsuccessful, check your internet connection and try again later.");
+                            SSFAlertsService.showAlert("Error", "The connection with the server was unsuccessful, check your internet connection and try again later.");
                         }
                         else {
-                            alert("Something went wrong, try again.");
+
+                            // debug
+                            console.log("then function 2: else catch-all");
+
+                            SSFAlertsService.showAlert("Error", "Something went wrong, try again.");
                         }
                     });
             }
@@ -79,8 +98,8 @@ angular.module('starter.controllers', [])
 ])
 
 // The register controller
-.controller('RegisterCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window',
-    function($scope, $state, UserService, $ionicHistory, $window) {
+.controller('RegisterCtrl', ['$scope', '$state', 'UserService', '$ionicHistory', '$window', 'SSFAlertsService',
+    function($scope, $state, UserService, $ionicHistory, $window, SSFAlertsService) {
 
 
         // used to register user
@@ -139,7 +158,7 @@ angular.module('starter.controllers', [])
 
             // Check that the passwords match
             if ($scope.register.password !== $scope.password.repeatPassword) {
-                alert("The repeat password is not the same as the password. Please correct.");
+                SSFAlertsService.showAlert("Error", "The repeat password is not the same as the password. Please correct.");
                 return;
             }
 
@@ -154,19 +173,19 @@ angular.module('starter.controllers', [])
                         else {
                             // invalid response
                             console.log(response);
-                            alert("Something went wrong, try again.");
+                            SSFAlertsService.showAlert("Error", "Something went wrong, try again.");
                         }
                     }, function(response) {
                         // Code 422 means a user with that email already exists in the database.
                         if (response.status === 422) {
-                            alert("A user with that email is already registered.");
+                            SSFAlertsService.showAlert("Error", "A user with that email is already registered.");
                         }
                         else if (response.data === null) {
                             //If the data is null, it means there is no internet connection.
-                            alert("The connection with the server was unsuccessful, check your internet connection and try again later.");
+                            SSFAlertsService.showAlert("Error", "The connection with the server was unsuccessful, check your internet connection and try again later.");
                         }
                         else {
-                            alert("Something went wrong, try again.");
+                            SSFAlertsService.showAlert("Error", "Something went wrong, try again.");
                         }
                     });
             }
@@ -175,8 +194,8 @@ angular.module('starter.controllers', [])
 ])
 
 // The Lobby Controller
-.controller('LobbyCtrl', ['$scope', '$state', '$ionicHistory', 'UserService', '$window', 'ServerQuestionService', 'TKQuestionsService', 'TKAnswersService',
-    function($scope, $state, $ionicHistory, UserService, $window, ServerQuestionService, TKQuestionsService, TKAnswersService) {
+.controller('LobbyCtrl', ['$scope', '$state', '$ionicHistory', 'UserService', '$window', 'ServerQuestionService', 'TKQuestionsService', 'TKAnswersService', 'SSFAlertsService',
+    function($scope, $state, $ionicHistory, UserService, $window, ServerQuestionService, TKQuestionsService, TKAnswersService, SSFAlertsService) {
 
         // reset the category totals left over from previous tests every time we enter this view.
         $scope.$on('$ionicView.enter', function() {
@@ -202,10 +221,10 @@ angular.module('starter.controllers', [])
                         $state.go('landing');
                     }
                     else {
-                        alert("Could not logout at this moment, try again.");
+                        SSFAlertsService.showAlert("Error", "Could not logout at this moment, try again.");
                     }
                 }, function(response) {
-                    alert("Could not logout at this moment, try again.");
+                    SSFAlertsService.showAlert("Error", "Could not logout at this moment, try again.");
                 });
         };
 
@@ -260,17 +279,20 @@ angular.module('starter.controllers', [])
 
         // method
         function confirmPrompt() {
-            var response = confirm("The questions could not be retrieved at this time, do you want to try again?");
-            if (response == true) {
-                getQuestions();
-            }
+
+            SSFAlertsService.showConfirm("Failed to Retrieve Questions", "The questions could not be retrieved at this time, do you want to try again?")
+                .then(function(response) {
+                    if (response == true) {
+                        getQuestions();
+                    }
+                });
         }
     }
 ])
 
 // The Test controller
-.controller('TestCtrl', ['$scope', 'testInfo', '$stateParams', '$state', '$window', 'ServerAnswersService', 'TKQuestionsService', 'TKAnswersService', '$ionicHistory', 'TKResultsButtonService',
-    function($scope, testInfo, $stateParams, $state, $window, ServerAnswersService, TKQuestionsService, TKAnswersService, $ionicHistory, TKResultsButtonService) {
+.controller('TestCtrl', ['$scope', 'testInfo', '$stateParams', '$state', '$window', 'ServerAnswersService', 'TKQuestionsService', 'TKAnswersService', '$ionicHistory', 'TKResultsButtonService', 'SSFAlertsService',
+    function($scope, testInfo, $stateParams, $state, $window, ServerAnswersService, TKQuestionsService, TKAnswersService, $ionicHistory, TKResultsButtonService, SSFAlertsService) {
 
         // rjs debug
         // console.log("category totals from the test controller:");
@@ -357,34 +379,38 @@ angular.module('starter.controllers', [])
 
         // Only used if we have trouble storing the results
         function confirmPrompt() {
-            var response = confirm("The answers could not be saved at the moment, do you want to try again?");
-            if (response == true) {
-                storeToDatabase();
-            }
-            else {
-                $ionicHistory.nextViewOptions({
-                    disableBack: true
+
+            SSFAlertsService.showConfirm("Failed to Save Answers", "The answers could not be saved at the moment, do you want to try again?")
+                .then(function(response) {
+                    if (response == true) {
+                        storeToDatabase();
+                    }
+                    else {
+                        $ionicHistory.nextViewOptions({
+                            disableBack: true
+                        });
+
+                        // The user does not want to back through 30 pages to get back to the menu. Provide a menu button.
+                        TKResultsButtonService.setShouldShowMenuButton(true);
+
+                        $state.go('results');
+                    }
                 });
-
-                // The user does not want to back through 30 pages to get back to the menu. Provide a menu button.
-                TKResultsButtonService.setShouldShowMenuButton(true);
-
-                $state.go('results');
-            }
         }
-
-    } // end function
+    }
 ])
 
 // The Results controller
-.controller('ResultsCtrl', ['$scope', 'TKAnswersService', '$ionicHistory', '$state', 'TKResultsButtonService',
-    function($scope, TKAnswersService, $ionicHistory, $state, TKResultsButtonService) {
+.controller('ResultsCtrl', ['$scope', 'TKAnswersService', '$ionicHistory', '$state', 'TKResultsButtonService', 'SSFAlertsService',
+    function($scope, TKAnswersService, $ionicHistory, $state, TKResultsButtonService, SSFAlertsService) {
+
 
         // These tasks should be performed anew each time we enter this view...
         $scope.$on('$ionicView.enter', function() {
 
+            // rjs could not get this to work
             // In some cases this page needs to show a "menu" button, in ohers not.  This boolean is set in the page preceding this page.
-            $scope.shouldShowButton = TKResultsButtonService.getShouldShowMenuButton();
+            // $scope.shouldShowButton = TKResultsButtonService.getShouldShowMenuButton();
 
             // Get the category totals
             var categoryTotals = TKAnswersService.getCategoryTotals();
@@ -447,8 +473,8 @@ angular.module('starter.controllers', [])
 ])
 
 // The History controller
-.controller('HistoryCtrl', ['$scope', 'ServerAnswersService', '$window', '$state', 'TKAnswersService', 'TKResultsButtonService',
-    function($scope, ServerAnswersService, $window, $state, TKAnswersService, TKResultsButtonService) {
+.controller('HistoryCtrl', ['$scope', 'ServerAnswersService', '$window', '$state', 'TKAnswersService', 'TKResultsButtonService', 'SSFAlertsService',
+    function($scope, ServerAnswersService, $window, $state, TKAnswersService, TKResultsButtonService, SSFAlertsService) {
 
         // array variable to hold all the tests
         $scope.tests = [];
@@ -471,10 +497,13 @@ angular.module('starter.controllers', [])
 
         // internal method
         function confirmPrompt() {
-            var response = confirm("The tests could not be retrieved at the moment, do you want to try again?");
-            if (response == true) {
-                getResultsByUser();
-            }
+
+            SSFAlertsService.showConfirm("Failed to Retrieve Results", "Your results could not be retrieved at the moment, do you want to try again?")
+                .then(function(response) {
+                    if (response == true) {
+                        getResultsByUser();
+                    }
+                });
         }
 
 
@@ -501,7 +530,5 @@ angular.module('starter.controllers', [])
 
         // call internal method to fill array variable
         getResultsByUser();
-
-
     }
 ]);

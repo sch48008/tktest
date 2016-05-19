@@ -21,6 +21,10 @@ angular.module('RESTConnection', [])
 
         // Login
         service.login = function(user) {
+            
+            // debug
+            console.log("just before login post");
+            
             return $http.post(getUrl() + "login", user);
         };
 
