@@ -19,12 +19,12 @@ angular.module('RESTConnection', [])
             return $http.post(getUrl(), user);
         };
 
-        // Login
+        // login
         service.login = function(user) {
-            
-            // debug
-            console.log("just before login post");
-            
+
+            // add "time-to-live" key for user token
+            user["ttl"] = 1209600000;
+
             return $http.post(getUrl() + "login", user);
         };
 

@@ -28,7 +28,7 @@ angular.module('starter.controllers', [])
         $scope.loginSubmitForm = function(form) {
 
             console.log("before check form valid");
-            
+
             if (form.$valid) {
                 UserService.login($scope.user)
                     .then(function(response) {
@@ -213,11 +213,14 @@ angular.module('starter.controllers', [])
                     if (response.status === 204) {
                         console.log("successful logout");
 
+                        // delete user info from local storage
+                        delete $window.localStorage['token'];
+                        delete $window.localStorage['userID'];
+
                         $ionicHistory.nextViewOptions({
                             historyRoot: true,
                             disableBack: true
                         });
-
                         $state.go('landing');
                     }
                     else {
@@ -267,7 +270,7 @@ angular.module('starter.controllers', [])
                         var questions = response.data;
                         TKQuestionsService.setQuestions(questions);
                     }
-                    else {
+                    else if (response.status !== 401) {
                         // invalid response
                         confirmPrompt();
                     }
@@ -367,7 +370,7 @@ angular.module('starter.controllers', [])
 
                         $state.go('results');
                     }
-                    else {
+                    else if (response.status !== 401) {
                         // invalid response
                         confirmPrompt();
                     }
@@ -516,7 +519,7 @@ angular.module('starter.controllers', [])
                         // store response data
                         $scope.tests = response.data;
                     }
-                    else {
+                    else if (response.status !== 401) {
                         // invalid
                         confirmPrompt();
                     }
